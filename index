@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Labour Planning Tool</title>
+</head>
+<body>
+  <h1>Labour Planning</h1>
+
+  <div>
+    <input id="dayTeams" placeholder="Day Teams" value="4"/>
+    <input id="nightTeams" placeholder="Night Teams" value="4"/>
+    <input id="teamSize" value="5"/>
+    <input id="dayHours" value="9"/>
+    <input id="nightHours" value="11.5"/>
+    <input id="maxHours" value="45"/>
+    <input id="minTarget" value="40"/>
+    <input id="absenteeism" value="10"/>
+    <input id="weeks" value="4"/>
+
+    <label><input type="checkbox" id="sat"/> Saturday</label>
+    <label><input type="checkbox" id="sun"/> Sunday</label>
+
+    <button onclick="run()">Run</button>
+    <button onclick="download()">Download CSV</button>
+  </div>
+
+  <pre id="output"></pre>
+
+  <script type="module">
+    import { calculateScenario } from './calculator.js';
+    import { getRecommendations } from './recommendations.js';
+    import { exportCSV } from './export.js';
+
+    let lastResult = null;
+
+    window.run = () => {
+      const input = {
+        dayTeams: +document.getElementById('dayTeams').value,
+        nightTeams: +document.getElementById('nightTeams').value,
+        teamSize: +document.getElementById('teamSize').value,
+        scannersPerTeam: 1,
+        dayHours: +document.getElementById('dayHours').value,
+        nightHours: +document.getElementById('nightHours').value,
+        maxHours: +document.getElementById('maxHours').value,
+        minTarget: +document.getElementById('minTarget').value,
+        absenteeism: +document.getElementById('absenteeism').value,
+        weeks: +document.getElementById('weeks').value,
+        workSaturday: document.getElementById('sat').checked,
+        workSunday: document.getElementById('sun').checked
+      };
+
+      const result = calculateScenario(input);
+      const recs = getRecommendations(result, input);
+
+      lastResult = result;
+
+      document.getElementById('output').textContent =
+        JSON.stringify(result, null, 2) +
+        "\n\nRecommendations:\n" +
+        recs.join("\n");
+    };
+
+    window.download = () => {
+      if (lastResult) exportCSV(lastResult);
+    };
+  </script>
+</body>
+</html>
